@@ -1,0 +1,74 @@
+---
+title: "Netflix Userbase Analysis - R"
+author: "Em Bejer"
+date: "2023-08-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Loading needed libraries.
+```{r dplyr, ggplot2}
+library(dplyr)
+library(ggplot2)
+```
+
+### Reading the dataset.
+```{r }
+data <- read.csv('/kaggle/input/netflix-userbase-dataset')
+```
+
+### Checking data structure.
+```{r }
+str(data)
+```
+
+### Checking if there's a null value.
+```{r }
+has_na <- any(is.na(data))
+has_na
+```
+
+### Changing columns to the correct data types.
+```{r }
+data$Join.Date <- as.Date(data$Join.Date, format = "%d-%m-%Y")
+data$Last.Payment.Date <- as.Date(data$Last.Payment.Date, format = "%d-%m-%Y")
+```
+
+### Creating a new data set for analysis.
+```{r }
+selected_data <- data[c('Subscription.Type', 'Device')]
+```
+
+### Grouping data due to categories.
+```{r }
+values_counts <- selected_data %>%
+  group_by(Subscription.Type, Device) %>% 
+  count()
+```
+
+### Plotting graph for subscription types vs devices
+```{r }
+ggplot(values_counts, aes(x = Subscription.Type, y = n, fill = Subscription.Type)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Graph with Categories", x = "Category", y = "Value") +
+  theme_minimal()
+```
+
+### Plotting graph for subscription types vs devices
+```{r }
+data_long <- pivot_longer(values_counts, cols = c(Device), names_to = "Subcategory", values_to = "Value")
+ggplot(data_long, aes(x = Value, y = n, fill = Subscription.Type)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(title = "Grouped Bar Chart with Subcategories", x = "Category", y = "Value") +
+    theme_minimal()
+```
+
+### Saving markdown
+```{r }
+ggsave('Netflix Userbase Analysis in R')
+```
